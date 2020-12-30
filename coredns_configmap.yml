@@ -1,0 +1,71 @@
+apiVersion: v1
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+          pods insecure
+          upstream
+          fallthrough in-addr.arpa ip6.arpa
+        }
+        hosts /etc/coredns/NodeHosts {
+          reload 1s
+          fallthrough
+        }
+        prometheus :9153
+        forward . /etc/resolv.conf
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+  NodeHosts: |
+    192.168.1.3 ubuntu
+    192.168.1.3 home.bracloud.services
+kind: ConfigMap
+metadata:
+  annotations:
+    objectset.rio.cattle.io/applied: '{"apiVersion":"v1","data":{"Corefile":".:53 {\n    errors\n    health\n    ready\n    kubernetes cluster.local in-addr.arpa ip6.arpa {\n      pods insecure\n      upstream\n      fallthrough in-addr.arpa ip6.arpa\n    }\n    hosts /etc/coredns/NodeHosts {\n      reload 1s\n      fallthrough\n    }\n    prometheus :9153\n    forward . /etc/resolv.conf\n    cache 30\n    loop\n    reload\n    loadbalance\n}\n"},"kind":"ConfigMap","metadata":{"annotations":{"objectset.rio.cattle.io/id":"","objectset.rio.cattle.io/owner-gvk":"k3s.cattle.io/v1, Kind=Addon","objectset.rio.cattle.io/owner-name":"coredns","objectset.rio.cattle.io/owner-namespace":"kube-system"},"labels":{"objectset.rio.cattle.io/hash":"bce283298811743a0386ab510f2f67ef74240c57"},"name":"coredns","namespace":"kube-system"}}'
+    objectset.rio.cattle.io/id: ""
+    objectset.rio.cattle.io/owner-gvk: k3s.cattle.io/v1, Kind=Addon
+    objectset.rio.cattle.io/owner-name: coredns
+    objectset.rio.cattle.io/owner-namespace: kube-system
+  creationTimestamp: "2020-12-29T18:06:21Z"
+  labels:
+    objectset.rio.cattle.io/hash: bce283298811743a0386ab510f2f67ef74240c57
+  managedFields:
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:data:
+        .: {}
+        f:Corefile: {}
+      f:metadata:
+        f:annotations:
+          .: {}
+          f:objectset.rio.cattle.io/applied: {}
+          f:objectset.rio.cattle.io/id: {}
+          f:objectset.rio.cattle.io/owner-gvk: {}
+          f:objectset.rio.cattle.io/owner-name: {}
+          f:objectset.rio.cattle.io/owner-namespace: {}
+        f:labels:
+          .: {}
+          f:objectset.rio.cattle.io/hash: {}
+    manager: k3s
+    operation: Update
+    time: "2020-12-29T18:06:22Z"
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:data:
+        f:NodeHosts: {}
+    manager: kubectl-edit
+    operation: Update
+    time: "2020-12-30T13:11:48Z"
+  name: coredns
+  namespace: kube-system
+  resourceVersion: "26943"
+  selfLink: /api/v1/namespaces/kube-system/configmaps/coredns
+  uid: 5b149745-ed08-4bad-aced-78b3651ff29b
