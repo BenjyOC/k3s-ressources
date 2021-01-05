@@ -24,6 +24,8 @@ data:
   NodeHosts: |
     192.168.1.3 ubuntu
     192.168.1.3 home.bracloud.services
+    192.168.1.3 prometheus.home.bracloud.services
+    192.168.1.3 blog.home.bracloud.services
 kind: ConfigMap
 metadata:
   annotations:
