@@ -112,15 +112,8 @@ global:
 ## ref: https://prometheus.io/docs/alerting/alertmanager/
 ##
 alertmanager:
-
-  ## Deploy alertmanager
-  ##
   enabled: true
-
-  ## Api that prometheus will use to communicate with alertmanager. Possible values are v1, v2
-  ##
   apiVersion: v2
-
   ## Service account for Alertmanager to use.
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
   ##
@@ -129,11 +122,6 @@ alertmanager:
     name: ""
     annotations: {}
 
-  ## Configure pod disruption budgets for Alertmanager
-  ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
-  ## This configuration is immutable once created and will require the PDB to be deleted to be changed
-  ## https://github.com/kubernetes/kubernetes/issues/45398
-  ##
   podDisruptionBudget:
     enabled: false
     minAvailable: 1
@@ -150,7 +138,7 @@ alertmanager:
       group_by: ['job']
       group_wait: 30s
       group_interval: 5m
-      repeat_interval: 12h
+      repeat_interval: 1h
       receiver: 'null'
       routes:
       - match:
@@ -2026,7 +2014,21 @@ prometheus:
     ## The scrape configuration example below will find master nodes, provided they have the name .*mst.*, relabel the
     ## port to 2379 and allow etcd scraping provided it is running on all Kubernetes master nodes
     ##
-    additionalScrapeConfigs: []
+    additionalScrapeConfigs:
+      - job_name: 'http_2xx'
+        metrics_path: /probe
+        params:
+          module: [http_2xx]
+        static_configs:
+          - targets:
+            - https://blog.bracloud.services
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: prometheus-blackbox-exporter:9115
     # - job_name: kube-etcd
     #   kubernetes_sd_configs:
     #     - role: node
