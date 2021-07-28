@@ -207,6 +207,8 @@ alertmanager:
       cert-manager.io/cluster-issuer: letsencrypt-prod
       acme.cert-manager.io/http01-edit-in-place: "true"
       traefik.ingress.kubernetes.io/redirect-entry-point: https
+      traefik.ingress.kubernetes.io/auth-secret: brabiller-basic-auth
+      traefik.ingress.kubernetes.io/auth-type: basic
 
     labels: {}
 
@@ -1602,6 +1604,8 @@ prometheus:
       cert-manager.io/cluster-issuer: letsencrypt-prod
       acme.cert-manager.io/http01-edit-in-place: "true"
       traefik.ingress.kubernetes.io/redirect-entry-point: https
+      traefik.ingress.kubernetes.io/auth-secret: brabiller-basic-auth
+      traefik.ingress.kubernetes.io/auth-type: basic
     labels: {}
 
     ## Hostnames.
@@ -2043,6 +2047,34 @@ prometheus:
         static_configs:
           - targets:
             - https://blog.bracloud.services
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: prometheus-blackbox-exporter:9115
+      - job_name: 'imap_check'
+        metrics_path: /probe
+        params:
+          module: [imap_starttls]
+        static_configs:
+          - targets:
+            - mail.bracloud.services:143
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: prometheus-blackbox-exporter:9115
+      - job_name: 'smtp_check'
+        metrics_path: /probe
+        params:
+          module: [smtp_starttls]
+        static_configs:
+          - targets:
+            - mail.bracloud.services:587
         relabel_configs:
           - source_labels: [__address__]
             target_label: __param_target
