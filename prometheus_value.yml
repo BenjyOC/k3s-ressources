@@ -139,13 +139,27 @@ alertmanager:
       group_wait: 30s
       group_interval: 5m
       repeat_interval: 1h
-      receiver: 'null'
+      receiver: 'pushover'
       routes:
       - match:
           alertname: Watchdog
         receiver: 'null'
+      - match:
+          alertname: KubeContainerWaiting|KubeDaemonSetRolloutStuck|KubeDeploymentReplicasMismatch
+        receiver: 'null'
+      - match:
+          severity: warning
+        receiver: 'null'
     receivers:
     - name: 'null'
+    - name: "pushover"
+      pushover_configs:
+        - user_key: 'uskz7d7crywgs8tmd523p1myd9svg8'
+          token: 'aivin46vsoseiiq8oytxqkhx2qjuv4'
+          send_resolved: true
+          url: https://prometheus.home.bracloud.services/alerts
+          retry: 15m
+          expire: 30m
 
   ## Pass the Alertmanager configuration directives through Helm's templating
   ## engine. If the Alertmanager configuration contains Alertmanager templates,
@@ -1165,7 +1179,7 @@ kubeStateMetrics:
 kube-state-metrics:
   image:
     repository: "carlosedp/kube-state-metrics"
-    tag: "v1.9.6"
+    tag: "v1.9.6-arm64"
   namespaceOverride: ""
   rbac:
     create: true
@@ -1894,7 +1908,7 @@ prometheus:
 
     ## How long to retain metrics
     ##
-    retention: 10d
+    retention: 14d
 
     ## Maximum size of metrics
     ##
@@ -1980,17 +1994,24 @@ prometheus:
     ## Prometheus StorageSpec for persistent data
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/user-guides/storage.md
     ##
-    storageSpec: {}
+    storageSpec:
     ## Using PersistentVolumeClaim
     ##
-    #  volumeClaimTemplate:
-    #    spec:
-    #      storageClassName: gluster
-    #      accessModes: ["ReadWriteOnce"]
-    #      resources:
-    #        requests:
-    #          storage: 50Gi
-    #    selector: {}
+      volumeClaimTemplate:
+        #spec:
+        #  storageClassName: local
+        #  accessModes: ["ReadWriteOnce"]
+        #  resources:
+        #    requests:
+        #      storage: 5Gi
+        spec:
+          storageClassName: freenas-nfs-csi
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 4Gi
+        #selector: {}
 
     ## Using tmpfs volume
     ##
