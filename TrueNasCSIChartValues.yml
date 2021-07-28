@@ -1,0 +1,82 @@
+csiDriver:
+  name: "org.democratic-csi.nfs"
+
+storageClasses:
+- name: freenas-nfs-csi
+  defaultClass: false
+  reclaimPolicy: Delete
+  volumeBindingMode: Immediate
+  allowVolumeExpansion: true
+  parameters:
+    fsType: nfs
+  mountOptions:
+  - noatime
+  - nfsvers=4
+  secrets:
+    provisioner-secret:
+    controller-publish-secret:
+    node-stage-secret:
+    node-publish-secret:
+    controller-expand-secret:
+driver:
+  config:
+    driver: freenas-nfs
+    instance_id:
+    httpConnection:
+      protocol: http
+      host: 192.168.1.18
+      port: 80
+      # This is the API key that we generated previously
+      apiKey: "1-QAXBOlia36irPc2in97N1znR9SuTmFnpNLb5tVzwRCge62ATXEJOzszEPAqY9iff"
+      allowInsecure: true
+    sshConnection:
+      host: 192.168.1.18
+      port: 22
+      username: root
+      # This is the SSH key that we generated for passwordless authentication
+      privateKey: |
+        -----BEGIN RSA PRIVATE KEY-----
+        MIIEpQIBAAKCAQEAt1FL1lvMkJenqpxmtqFKcRymI78mCf0X6bNhq/BmNjRTp4P+
+        woVc29wpJp6bnWPgHtIimQv7vbxsd9X3ESEUhvcvmFrI/lGPQgoycQGy0amRe9AF
+        kXvJUoet6WT8WqQiXxKuQK9UULMOwSdok5Yg9Z08bckhRKk+Fk0OdQOSbm1p7M/N
+        RxbG7GgSAZPOwllRNWHo2i8VAuDUOD+++lJyc92/pwQpUSfJQLl9Mo/bDwKOlWnj
+        ZxvM9L76ojEcnFDpHcPf+4Pag/gQ53PkGbNoMr1ZqfpRV3eoFAdFuVYARiuvhfZm
+        JQBOJvrW99k2F7ykkO2zaD6ntincbKBxWtk07wIDAQABAoIBAFknZ4uj77QunXOD
+        RwzxGmQye7aM4zIebf/RpuHZM8yO3FRvBHqUI5ol07mdj68XAMvchMkMI+2d8t7B
+        J7yj6vjMxNAC7xeIkPScQvXkzpPbNQ8TF3Iu0rWZmQIWhAiNJM46Jpb87jOlMbrM
+        sLZ+YB8zzkzScaST7scnyK0uBIxBRPd2bmyvCJR9R+EMpA+JVFCR7MaaMPYDiK2J
+        KPSL06SbcPQ69D6VaZbI6ajGrVvAdXHC88W3EwGes37kZjZumknv59g0fz8wYvjl
+        PxMuS/gbKmc5a5S7UviGM4Xd9SJWK83U5UrW8SdxhfIFJLzoywK/miVjLnCeNQkW
+        eUomwEkCgYEA6Cm+p0SOAGDGU6QvLZwoabcDIEa7glqkoQnjCIVLNoin6YJzyK7/
+        YNS+GxJcUAV4twbaMh7XbrobPuxPnv9DaDvsTsBuQ3zMMxQfJNwRDvY65MhlgNIL
+        aObykQ6expQc+qaV0QNFhkMxR+hS1Ts6FgUHuLrAwbmgoGnG8r51zYMCgYEAyiOt
+        4ifaz6AS9T51SWZGNLyr7UkTmHA/vpTwRTniHgM7o5fEEylioSxn15o+NVd7MsXr
+        /ZRrI+NRwkzEvFgDIOWdkBbhxc7lGriPHWtK2yw+dGFMLxAsnNQ5DLIX2U14yEsq
+        31UVY3K1ik83jCUMtKtg3iYIFIZXgPp+CmSEqyUCgYEA2fqf7HMclNRIQi4MsdlF
+        xIQ15i8jTTAIFL+wr8ZfKRPD/CYkyg8s7mCxIb/qdqO8hLRlV9vHUEpi3ICJ/XIU
+        eyCQLhzVKn5ZR7gjybrqNU8RWs+hJgOQ/OyiYXoFr9NPJjQUxEs7EuWxtp82bsiO
+        MDCG4HZQF1RPsW2/gxk6iDsCgYEAvJVo5jM0irvWtAJfPeky2oSjCa9BntgqQE2H
+        k64a7NErVMaEYTQdFiztfFIkc3N4Nrg8IMnU4xhy8IjairS5xnkx9HnEjN0nFTTW
+        ICY3Ih827TDQ+J9oX7AGwXdtlIgYhRTLnKwuVidwgubA9fiiz/OLXfWxWCS1glkw
+        OdXpiBkCgYEAsWgOMouKqLFRG7bTGkPNg4qcwgXrAUhLZdIVQ+c6nsBslOXwZKi2
+        BSWRBlx1Y6t91oSiY989Kn+mHr+QIlTh+UAMEvHF67NkLvhM/aqYhbqaxrNlGbOL
+        i1txxAr25P6gJSq+op1Qf9i0SFO11RRWUmSTyceguLFTqalM/Owi0JI=
+        -----END RSA PRIVATE KEY-----
+    zfs:
+      # Make sure to use the storage pool that was created previously
+      datasetParentName: MAIN/k8s/nfs/vols
+      detachedSnapshotsDatasetParentName: MAIN/k8s/nfs/snaps
+      datasetEnableQuotas: true
+      datasetEnableReservation: false
+      datasetPermissionsMode: "0777"
+      datasetPermissionsUser: root
+      datasetPermissionsGroup: wheel
+    nfs:
+      shareHost: 192.168.1.18
+      shareAlldirs: false
+      shareAllowedHosts: []
+      shareAllowedNetworks: []
+      shareMaprootUser: root
+      shareMaprootGroup: wheel
+      shareMapallUser: ""
+      shareMapallGroup: ""
