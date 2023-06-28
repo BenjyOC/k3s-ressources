@@ -18,7 +18,7 @@ spec:
         useDefaultPublishedService: true
     dashboard:
       enabled: true
-      domain: "traefik.home.bracloud.services"
+      domain: "traefik.home.bracloud.fr"
     image: "rancher/library-traefik"
     tolerations:
       - key: "CriticalAddonsOnly"

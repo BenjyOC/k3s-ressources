@@ -145,7 +145,7 @@ alertmanager:
           alertname: Watchdog
         receiver: 'null'
       - match:
-          alertname: KubeContainerWaiting|KubeDaemonSetRolloutStuck|KubeDeploymentReplicasMismatch
+          alertname: KubeContainerWaiting|KubeDaemonSetRolloutStuck|KubeDeploymentReplicasMismatch|KubeAPIErrorBudgetBurn
         receiver: 'null'
       - match:
           severity: warning
@@ -157,7 +157,7 @@ alertmanager:
         - user_key: 'uskz7d7crywgs8tmd523p1myd9svg8'
           token: 'aivin46vsoseiiq8oytxqkhx2qjuv4'
           send_resolved: true
-          url: https://prometheus.home.bracloud.services/alerts
+          url: https://prometheus.home.bracloud.fr/alerts
           retry: 15m
           expire: 30m
 
@@ -215,7 +215,7 @@ alertmanager:
     ## Hosts must be provided if Ingress is enabled.
     ##
     hosts:
-      - alertmanager.home.bracloud.services
+      - alertmanager.home.bracloud.fr
 
     ## Paths to use for ingress rules - one path should match the alertmanagerSpec.routePrefix
     ##
@@ -228,7 +228,7 @@ alertmanager:
     tls:
      - secretName: alertmanager-general-tls
        hosts:
-         - alertmanager.home.bracloud.services
+         - alertmanager.home.bracloud.fr
 
   ## Configuration for Alertmanager secret
   ##
@@ -615,7 +615,7 @@ grafana:
     # hosts:
     #   - grafana.domain.com
     hosts:
-      - grafana.home.bracloud.services
+      - grafana.home.bracloud.fr
 
     ## Path for grafana ingress
     path: /
@@ -626,7 +626,7 @@ grafana:
     tls:
      - secretName: grafana-general-tls
        hosts:
-         - grafana.home.bracloud.services
+         - grafana.home.bracloud.fr
 
   sidecar:
     dashboards:
@@ -1614,7 +1614,7 @@ prometheus:
     # hosts:
     #   - prometheus.domain.com
     hosts:
-      - prometheus.home.bracloud.services
+      - prometheus.home.bracloud.fr
 
     ## Paths to use for ingress rules - one path should match the prometheusSpec.routePrefix
     ##
@@ -1627,7 +1627,7 @@ prometheus:
     tls:
       - secretName: prometheus-general-tls
         hosts:
-          - prometheus.home.bracloud.services
+          - prometheus.home.bracloud.fr
 
   ## Configuration for creating an Ingress that will map to each Prometheus replica service
   ## prometheus.servicePerReplica must be enabled
@@ -2002,19 +2002,19 @@ prometheus:
     ## Using PersistentVolumeClaim
     ##
       volumeClaimTemplate:
-        #spec:
-        #  storageClassName: local
-        #  accessModes: ["ReadWriteOnce"]
-        #  resources:
-        #    requests:
-        #      storage: 5Gi
         spec:
-          storageClassName: freenas-nfs-csi
-          accessModes:
-            - ReadWriteOnce
+          storageClassName: local
+          accessModes: ["ReadWriteOnce"]
           resources:
             requests:
-              storage: 4Gi
+              storage: 5Gi
+        #spec:
+        #  storageClassName: freenas-nfs-csi
+        #  accessModes:
+        #    - ReadWriteOnce
+        #  resources:
+        #    requests:
+        #      storage: 4Gi
         #selector: {}
 
     ## Using tmpfs volume
@@ -2040,13 +2040,16 @@ prometheus:
     ## port to 2379 and allow etcd scraping provided it is running on all Kubernetes master nodes
     ##
     additionalScrapeConfigs:
+      - job_name: OpenWrt
+        static_configs:
+          - targets: ['192.168.30.1:9100']
       - job_name: 'http_2xx'
         metrics_path: /probe
         params:
           module: [http_2xx]
         static_configs:
           - targets:
-            - https://blog.bracloud.services
+            - https://blog.bracloud.fr
         relabel_configs:
           - source_labels: [__address__]
             target_label: __param_target
@@ -2060,7 +2063,7 @@ prometheus:
           module: [imap_starttls]
         static_configs:
           - targets:
-            - mail.bracloud.services:143
+            - mail.bracloud.fr:143
         relabel_configs:
           - source_labels: [__address__]
             target_label: __param_target
@@ -2074,7 +2077,7 @@ prometheus:
           module: [smtp_starttls]
         static_configs:
           - targets:
-            - mail.bracloud.services:587
+            - mail.bracloud.fr:587
         relabel_configs:
           - source_labels: [__address__]
             target_label: __param_target

@@ -59,7 +59,7 @@ metadata:
     traefik.ingress.kubernetes.io/redirect-entry-point: https
 spec:
   rules:
-  - host: nas.home.bracloud.services
+  - host: nas.home.bracloud.fr
     http:
       paths:
       - path: /
@@ -71,7 +71,7 @@ spec:
               number: 80
   tls:
   - hosts:
-    - nas.home.bracloud.services
+    - nas.home.bracloud.fr
     secretName: nas-bra-tls
 ---
 apiVersion: v1
