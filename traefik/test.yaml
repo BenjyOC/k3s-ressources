@@ -88,7 +88,7 @@ metadata:
     traefik.ingress.kubernetes.io/router.middlewares: test-redirect-to-https@kubernetescrd
 spec:
   rules:
-  - host: test.home.bracloud.fr
+  - host: poc.home.bracloud.fr
     http:
       paths:
       - path: /
@@ -110,7 +110,7 @@ metadata:
     traefik.ingress.kubernetes.io/router.tls: "true"
 spec:
   rules:
-  - host: test.home.bracloud.fr
+  - host: poc.home.bracloud.fr
     http:
       paths:
       - path: /

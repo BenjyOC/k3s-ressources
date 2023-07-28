@@ -1,0 +1,209 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: plexserver
+  name: plexserver 
+  namespace: plex
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: plexserver
+  template:
+    metadata:
+      labels:
+        app: plexserver
+    spec:
+      volumes:
+      - name: plex-config
+        persistentVolumeClaim:
+          claimName: plex-config
+      - name: plex-data
+        persistentVolumeClaim:
+          claimName: plex-data
+      - name: plex-data-nfs
+        nfs:
+          path: /srv/nfs/plex
+          server: 192.168.10.110
+      containers:
+      - env:
+        - name: PLEX_CLAIM
+          value: claim-CtNvLvxKzEjQGKAW1m8Q
+        - name: UID
+          value: "1000"    # < ASCII code for '100'
+        - name: GID
+          value: "1000" # < ACII code for '1035'
+        - name: VERSION
+          value: docker
+        - name: TZ
+          value: Europe/Paris  # < Timezone
+        - name: ADVERTISE_IP
+          value: "http://192.168.10.101:32400/"
+        image: ghcr.io/linuxserver/plex   # < the name of the docker image we will use
+        imagePullPolicy: Always    # < always use the latest image when creating container/pod
+        name: plexserver           # < name of container
+        ports:
+        - containerPort: 32400     # < required network portnumber. See https://hub.docker.com/r/linuxserver/plex
+          name: pms-web            # < reference name from the port in the service yaml
+          protocol: TCP
+        - containerPort: 32469
+          name: dlna-tcp
+          protocol: TCP
+        - containerPort: 1900
+          name: dlna-udp
+          protocol: UDP
+        - containerPort: 3005
+          name: plex-companion
+          protocol: TCP  
+        - containerPort: 5353
+          name: discovery-udp
+          protocol: UDP  
+        - containerPort: 8324
+          name: plex-roku
+          protocol: TCP  
+        - containerPort: 32410
+          name: gdm-32410
+          protocol: UDP
+        - containerPort: 32412
+          name: gdm-32412
+          protocol: UDP
+        - containerPort: 32413
+          name: gdm-32413
+          protocol: UDP
+        - containerPort: 32414
+          name: gdm-32414
+          protocol: UDP
+        resources: {}
+        stdin: true
+        tty: true
+        volumeMounts:            # < the volume mount in the container. Look at the relation volumelabel->pvc->pv
+        - mountPath: /config     # < mount location in the container
+          name: plex-config  # < volumelabel configured earlier in the yaml file
+        - mountPath: /data
+          name: plex-data-nfs
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plexserver
+  namespace: plex
+spec:
+  ports:
+  - port: 32400
+    targetPort: 32400
+  selector:
+    app: plexserver
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: plexserver
+  namespace: plex
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  rules:
+  - host: plex.home.bracloud.fr
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: plexserver
+            port:
+              number: 32400
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: plex-tcp              # < name of the service
+  namespace: plex       # < namespace where to place service
+  annotations:
+    metallb.universe.tf/allow-shared-ip: plex
+spec:
+  selector:
+    app: plexserver           # < reference to the deployment (connects the service with the deployment)
+  ports:                      
+  - port: 32400               # < port to open on the outside on the server
+    targetPort: 32400         # < targetport. port on the pod to passthrough
+    name: pms-web             # < reference name for the port in the deployment yaml
+    protocol: TCP
+  - port: 3005
+    targetPort: 3005
+    name: plex-companion
+  - port: 8324
+    name: plex-roku
+    targetPort: 8324  
+    protocol: TCP  
+  - port: 32469
+    targetPort: 32469
+    name: dlna-tcp
+    protocol: TCP
+  externalTrafficPolicy: Cluster
+  type: LoadBalancer
+  loadBalancerIP: 192.168.10.101
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: plex-udp              # < name of the service
+  namespace: plex       # < namespace where to place service
+  annotations:
+    metallb.universe.tf/allow-shared-ip: plex
+spec:
+  selector:
+    app: plexserver           # < reference to the deployment (connects the service with the deployment)
+  ports:                      
+  - port: 1900                # < port to open on the outside on the server
+    targetPort: 1900          # < targetport. port on the pod to passthrough
+    name: dlna-udp            # < reference name for the port in the deployment yaml
+    protocol: UDP
+  - port: 5353
+    targetPort: 5353
+    name: discovery-udp
+    protocol: UDP
+  - port: 32410
+    targetPort: 32410
+    name: gdm-32410
+    protocol: UDP
+  - port: 32412
+    targetPort: 32412
+    name: gdm-32412
+    protocol: UDP
+  - port: 32413
+    targetPort: 32413
+    name: gdm-32413
+    protocol: UDP
+  - port: 32414
+    targetPort: 32414
+    name: gdm-32414
+    protocol: UDP
+  externalTrafficPolicy: Cluster
+  type: LoadBalancer
+  loadBalancerIP: 192.168.10.101
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: plexserver2
+  namespace: plex
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    external-dns.alpha.kubernetes.io/hostname: plex1.home.bracloud.fr
+spec:
+  rules:
+  - host: plex1.home.bracloud.fr
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: plexserver
+            port:
+              number: 32400

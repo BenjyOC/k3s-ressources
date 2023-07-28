@@ -233,7 +233,7 @@ logs:
     # format: json
     # By default, the level is set to ERROR.
     # Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
-    level: DEBUG
+    level: INFO
   access:
     # To enable access logs
     enabled: false
@@ -501,9 +501,15 @@ additionalArguments: []
 #  - "--log.level=DEBUG"
 
 # Environment variables to be passed to Traefik's binary
-env: []
-# - name: SOME_VAR
-#   value: some-var-value
+env:
+ - name: OVH_APPLICATION_KEY
+   value: 8a5b0d78ef72c071
+ - name: OVH_APPLICATION_SECRET
+   value: 31ab74123c94ca8b734b91adb4b30b4f
+ - name: OVH_CONSUMER_KEY
+   value: 69f87df0df6fb4483409040859fbf5e1
+ - name: OVH_ENDPOINT
+   value: ovh-eu
 # - name: SOME_VAR_FROM_CONFIG_MAP
 #   valueFrom:
 #     configMapRef:
@@ -767,7 +773,6 @@ persistence:
 
 certResolvers:
    letsencrypt:
-#     # for challenge options cf. https://doc.traefik.io/traefik/https/acme/
      email: benjamin.rab@gmail.com
 #     dnsChallenge:
 #       # also add the provider's required configuration under env
@@ -783,9 +788,23 @@ certResolvers:
 #     tlsChallenge: true
      httpChallenge:
        entryPoint: "web"
-#     # It has to match the path with a persistent volume
      storage: /data/acme.json
-     #caserver: "https://acme-staging-v02.api.letsencrypt.org/directory"
+     caserver: "https://acme-v02.api.letsencrypt.org/directory"
+   letsencrypt-staging:
+     email: benjamin.rab@gmail.com
+     httpChallenge:
+       entryPoint: "web"
+     storage: /data/acme.json
+     caserver: "https://acme-staging-v02.api.letsencrypt.org/directory"
+   letsencrypt-dns:
+     email: benjamin.rab@gmail.com
+     dnsChallenge:
+       # cf. https://doc.traefik.io/traefik/https/acme/#providers
+       provider: ovh
+       delayBeforeCheck: 30
+       resolvers:
+         - 8.8.8.8
+     storage: /data/acme.json
      caserver: "https://acme-v02.api.letsencrypt.org/directory"
 
 # If hostNetwork is true, runs traefik in the host network namespace
